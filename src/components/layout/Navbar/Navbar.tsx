@@ -1,4 +1,6 @@
-import {ModalWindow} from '../ModalWindow'
+import { ModalWindow } from '../ModalWindow'
+import { CardForm } from '../../MainPage/CardForm'
+import { CardType } from '../../MainPage/CardList/Card/Card.types'
 
 export const Navbar = (): JSX.Element => {
     return (
@@ -24,9 +26,10 @@ export const Navbar = (): JSX.Element => {
                         buttonType='btn-outline-success'
                         buttonText='Добавить'
                     >
-                        <div>content</div>
+                        <CardForm
+                            onSubmit={(values: CardType) => console.log(values)}
+                        />
                     </ModalWindow>
-                    {/* <button className="btn btn-outline-success" type="submit">Добавить</button> */}
                 </div>
             </div>
         </nav>
