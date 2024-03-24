@@ -1,15 +1,17 @@
 
 import { CardType } from './CardList/Card/Card.types'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 
 type Props = {
   onSubmit: (values: CardType) => void,
-  onDelete?: (key: number) => void
+  onDelete?: (key: number) => void,
+  cardItem?: CardType
 }
 
 const CardForm = ({
   onSubmit,
-  onDelete
+  onDelete,
+  cardItem
 }: Props): JSX.Element => {
 
   const [cardFormState, setCardFormState] = useState<CardType>({
@@ -18,6 +20,13 @@ const CardForm = ({
     createdAt: new Date(),
     updatedAt: new Date(),
   })
+
+  useEffect(() => {
+    if (cardItem) {
+      setCardFormState(cardItem)
+    }
+    // eslint-disable-next-line
+  }, [])
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     setCardFormState({
@@ -28,14 +37,16 @@ const CardForm = ({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault()
-    onSubmit(cardFormState)
+    onSubmit({
+      ...cardFormState,
+    })
   }
 
   return (
     <div className="card-body">
       <form className="form-group d-flex flex-column gap-3" onSubmit={handleSubmit}>
-        <input onChange={onChange} type="text" id={'title'} className="form-control" placeholder="Заголовок"/>
-        <textarea onChange={onChange} rows={3} id={'text'} className="form-control" placeholder="Текст" />
+        <input onChange={onChange} value={cardFormState.title} type="text" id={'title'} className="form-control" placeholder="Заголовок"/>
+        <textarea onChange={onChange} value={cardFormState.text} rows={3} id={'text'} className="form-control" placeholder="Текст" />
         <div
           className='d-flex flex-row gap-2 justify-content-end'
         >

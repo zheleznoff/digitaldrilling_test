@@ -1,9 +1,21 @@
-import { CardType } from './Card.types'
+import { useContext, useState } from 'react';
+import { IndexedDBContext } from '../../../../providers/IndexedDBProvider'
+import { ModalWindow } from '../../../layout/ModalWindow'
+import { ExistedCardType } from './Card.types';
+import { CardForm } from '../../CardForm'
 type Props = {
-    card: CardType
+    card: ExistedCardType
 }
 
 const Card = ({ card }: Props): JSX.Element => {
+
+    const [showModal, setShowModal] = useState<boolean>(false);
+
+    const toggleModal = () => {
+        setShowModal(!showModal);
+    }
+
+    const { updateRecord,deleteRecord } = useContext(IndexedDBContext);
     return (
         <div
             className="card"
@@ -21,11 +33,32 @@ const Card = ({ card }: Props): JSX.Element => {
                     {card.text}
                 </p>
                 <div
-                    className='d-flex justify-content-between'
+                    className='d-flex justify-content-between align-items-center'
                 >
-                    <div className='d-flex'>
-                        <a href="#" className="card-link">Редактировать</a>
-                        <a href="#" className="card-link">Удалить</a>
+                    <div className='d-flex gap-2'>
+                        <ModalWindow
+                            showModal={showModal}
+                            toggleModal={toggleModal}
+                            buttonType='btn-secondary'
+                            buttonText='Редактировать'
+                            modalTitle='Редактирование заметки'
+                        >
+                            <CardForm
+                                cardItem={card}
+                                onSubmit={(values) => {
+                                    updateRecord(card.id,values).then(() => toggleModal())
+                                }}
+                            />
+                        </ModalWindow>
+                        <button
+                            className='btn btn-danger'
+                            onClick={() => {
+                                console.log(card);
+                                deleteRecord(card.id).then(() => toggleModal())
+                            }}
+                        >
+                            Удалить
+                        </button>
                     </div>
                     <div className='d-flex gap-2'>
                         <span className='text-muted'>

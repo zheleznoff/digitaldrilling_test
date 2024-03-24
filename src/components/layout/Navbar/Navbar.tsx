@@ -1,8 +1,19 @@
+import { useContext,useState } from 'react'
+import { IndexedDBContext } from '../../../providers/IndexedDBProvider';
 import { ModalWindow } from '../ModalWindow'
 import { CardForm } from '../../MainPage/CardForm'
 import { CardType } from '../../MainPage/CardList/Card/Card.types'
 
+
 export const Navbar = (): JSX.Element => {
+
+    const [showModal, setShowModal] = useState<boolean>(false);
+
+    const toggleModal = () => {
+        setShowModal(!showModal);
+    }
+
+    const {addRecord} = useContext(IndexedDBContext);
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary sticky-top mb-1">
             <div className="container-fluid">
@@ -15,9 +26,9 @@ export const Navbar = (): JSX.Element => {
                                     Сортировать
                                 </span>
                                 <ul className="dropdown-menu">
-                                    <li><span className="dropdown-item">По заголовку</span></li>
-                                    <li><span className="dropdown-item">По тексту</span></li>
-                                    <li><span className="dropdown-item">По дате</span></li>
+                                    <li><span className="dropdown-item">По названию</span></li>
+                                    <li><span className="dropdown-item">По дате создания</span></li>
+                                    <li><span className="dropdown-item">По дате редактирования</span></li>
                                 </ul>
                             </li>
                         </ul>
@@ -25,9 +36,13 @@ export const Navbar = (): JSX.Element => {
                     <ModalWindow
                         buttonType='btn-outline-success'
                         buttonText='Добавить'
+                        showModal={showModal}
+                        toggleModal={toggleModal}
                     >
                         <CardForm
-                            onSubmit={(values: CardType) => console.log(values)}
+                            onSubmit={(values: CardType) => {
+                                addRecord(values).then(() => toggleModal())
+                            }}
                         />
                     </ModalWindow>
                 </div>

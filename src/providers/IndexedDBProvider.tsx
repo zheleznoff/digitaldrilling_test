@@ -1,5 +1,5 @@
-import React, { createContext, useCallback, useState } from 'react';
-import { CardType } from '../components/MainPage/CardList/Card/Card.types'
+import { createContext, useEffect, useState } from 'react';
+import { CardType, ExistedCardType } from '../components/MainPage/CardList/Card/Card.types'
 
 const defaultValues = {
     db: null,
@@ -9,12 +9,25 @@ const defaultValues = {
 }
 type ProviderType = {
     db: IDBDatabase | null,
-    data: CardType[] | [],
+    data: ExistedCardType[] | [],
     databaseName: string,
     storeName: string
 }
 
-const IndexedDBContext = createContext<ProviderType>(defaultValues);
+type IndexedDBContextType  = {
+    providerData: ProviderType,
+    addRecord: (record: CardType) => Promise<unknown>,
+    deleteRecord: (key: number) => Promise<unknown>,
+    updateRecord: (key: number, updatedRecord: CardType) => Promise<unknown>
+}
+
+
+const IndexedDBContext = createContext<IndexedDBContextType>({
+    providerData: defaultValues,
+    addRecord: (record: CardType) => new Promise(() => null),
+    deleteRecord: (key: number) => new Promise(() => null),
+    updateRecord: (key: number) => new Promise(() => null)
+});
 
 type Props = {
     children: JSX.Element
@@ -23,9 +36,9 @@ type Props = {
 const IndexedDBProvider = ({ children }: Props) => {
     const [providerData, setProviderData] = useState<ProviderType>(defaultValues);
 
-    useCallback(() => {
+    useEffect(() => {
         const openDB = () => {
-            return new Promise((resolve, reject) => {
+            return new Promise<{db: IDBDatabase,data: ExistedCardType[]}>((resolve, reject) => {
                 const openRequest = indexedDB.open(providerData.databaseName, 1);
 
                 openRequest.onupgradeneeded = function () {
@@ -37,21 +50,16 @@ const IndexedDBProvider = ({ children }: Props) => {
 
                 openRequest.onsuccess = function () {
                     const db = openRequest.result;
-                    setProviderData({
-                        ...providerData,
-                        db: db
-                    });
 
                     const transaction = db.transaction(providerData.storeName, 'readonly');
                     const store = transaction.objectStore(providerData.storeName);
                     const getRequest = store.getAll();
 
                     getRequest.onsuccess = function () {
-                        setProviderData({
-                            ...providerData,
+                        resolve({
+                            db: db,
                             data: getRequest.result
                         });
-                        resolve(db);
                     };
 
                     getRequest.onerror = function () {
@@ -66,27 +74,39 @@ const IndexedDBProvider = ({ children }: Props) => {
         };
 
         openDB()
+            .then(res => {
+                setProviderData({
+                    ...providerData,
+                    db: res.db,
+                    data: res.data
+                });
+            })
             .catch(error => {
                 console.error('Error opening IndexedDB:', error);
             });
 
         return () => {
             if (providerData.db) {
-                providerData.db?.close();
+                providerData.db.close();
             }
         };
         // eslint-disable-next-line
     }, []);
 
     const addRecord = async (record: CardType) => {
+
         return new Promise(async (resolve, reject) => {
             const transaction = providerData.db!.transaction(providerData.storeName, 'readwrite');
             const store = transaction.objectStore(providerData.storeName);
 
             try {
-                const request = store.add(record);
+                const request = store.add({
+                    ...record,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
                 request.onsuccess = function () {
-                    setProviderData({ ...providerData, data: [...providerData.data, record] });
+                    setProviderData({ ...providerData, data: [...providerData.data, { ...record, id: Number(request.result)}] });
                     resolve('Запись успешно добавлена');
                 };
 
@@ -99,7 +119,7 @@ const IndexedDBProvider = ({ children }: Props) => {
         });
     };
 
-    const deleteRecord = async (key: string) => {
+    const deleteRecord = async (key: number) => {
         return new Promise(async (resolve, reject) => {
             const transaction = providerData.db!.transaction(providerData.storeName, 'readwrite');
             const store = transaction.objectStore(providerData.storeName);
@@ -107,13 +127,13 @@ const IndexedDBProvider = ({ children }: Props) => {
             const getRequest = store.getAllKeys();
             getRequest.onsuccess = async function () {
                 const keys = getRequest.result;
-                if (keys[Number(key)]) {
+                if (keys.find(item => item === Number(key))) {
                     const deleteRequest = store.delete(key);
 
                     deleteRequest.onsuccess = function () {
                         setProviderData({
                             ...providerData,
-                            data: providerData.data?.filter?.(item => item.key !== key)
+                            data: providerData.data?.filter?.(item => item.id !== key)
                         });
                         resolve('Last record deleted successfully');
                     };
@@ -132,7 +152,7 @@ const IndexedDBProvider = ({ children }: Props) => {
         });
     };
 
-    const updateRecord = async (key: string, updatedRecord: CardType): Promise<string> => {
+    const updateRecord = async (key: number, updatedRecord: CardType): Promise<string> => {
         return new Promise((resolve, reject) => {
             const transaction = providerData.db!.transaction(providerData.storeName, 'readwrite');
             const store = transaction.objectStore(providerData.storeName);
@@ -141,10 +161,15 @@ const IndexedDBProvider = ({ children }: Props) => {
             getRequest.onsuccess = function () {
                 const existingRecord = getRequest.result;
                 if (existingRecord) {
-                    const updatedData = { ...existingRecord, ...updatedRecord };
+                    const updatedData = {
+                        ...existingRecord,
+                        ...updatedRecord,
+                        updatedAt: new Date()
+                    };
                     const updateRequest = store.put(updatedData);
 
                     updateRequest.onsuccess = function () {
+                        setProviderData({ ...providerData, data: providerData.data?.map(item => item.id === key ? updatedData : item) });
                         resolve('Record updated successfully');
                     };
 
@@ -163,7 +188,7 @@ const IndexedDBProvider = ({ children }: Props) => {
     };
 
     return (
-        <IndexedDBContext.Provider value={providerData}>
+        <IndexedDBContext.Provider value={{providerData, addRecord, deleteRecord, updateRecord}}>
             {children}
         </IndexedDBContext.Provider>
     );

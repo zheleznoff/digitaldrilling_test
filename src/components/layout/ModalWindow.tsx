@@ -1,18 +1,14 @@
-import { useState } from 'react';
 
 type Props = {
+    showModal: boolean,
+    toggleModal: () => void,
     buttonType?: string | undefined,
     buttonText: string,
     modalTitle?: string | undefined,
     children: JSX.Element
 }
 
-const ModalWindow = ({ buttonType, buttonText, modalTitle, children }: Props): JSX.Element => {
-    const [showModal, setShowModal] = useState<boolean>(false);
-
-    const toggleModal = (): void => {
-        setShowModal(!showModal);
-    };
+const ModalWindow = ({ showModal, toggleModal, buttonType, buttonText, modalTitle, children }: Props): JSX.Element => {
 
     return (
         <div>
