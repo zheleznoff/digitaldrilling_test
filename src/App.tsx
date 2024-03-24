@@ -1,10 +1,14 @@
 import './App.css';
+import { Layout } from './components/layout/Layout';
+import { MainPage } from './components/MainPage/MainPage';
 
 function App() {
   return (
-    <div>
-      app
-    </div>
+    <>
+      <Layout>
+        <MainPage/>
+      </Layout>
+    </>
   );
 }
 
