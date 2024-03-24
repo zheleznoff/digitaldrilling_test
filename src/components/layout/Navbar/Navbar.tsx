@@ -1,6 +1,8 @@
+import {ModalWindow} from '../ModalWindow'
+
 export const Navbar = (): JSX.Element => {
     return (
-        <nav className="navbar navbar-expand-lg bg-body-tertiary">
+        <nav className="navbar navbar-expand-lg bg-body-tertiary sticky-top mb-1">
             <div className="container-fluid">
                 <span className="navbar-brand">Заметки</span>
                 <div className='d-flex gap-2'>
@@ -18,7 +20,13 @@ export const Navbar = (): JSX.Element => {
                             </li>
                         </ul>
                     </div>
-                    <button className="btn btn-outline-success" type="submit">Добавить</button>
+                    <ModalWindow
+                        buttonType='btn-outline-success'
+                        buttonText='Добавить'
+                    >
+                        <div>content</div>
+                    </ModalWindow>
+                    {/* <button className="btn btn-outline-success" type="submit">Добавить</button> */}
                 </div>
             </div>
         </nav>
