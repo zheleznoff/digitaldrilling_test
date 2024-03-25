@@ -13,7 +13,7 @@ export const Navbar = (): JSX.Element => {
         setShowModal(!showModal);
     }
 
-    const {addRecord} = useContext(IndexedDBContext);
+    const {addRecord, reorderBy, providerData: { sortingBy }} = useContext(IndexedDBContext);
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary sticky-top mb-1">
             <div className="container-fluid">
@@ -26,9 +26,9 @@ export const Navbar = (): JSX.Element => {
                                     Сортировать
                                 </span>
                                 <ul className="dropdown-menu">
-                                    <li><span className="dropdown-item">По названию</span></li>
-                                    <li><span className="dropdown-item">По дате создания</span></li>
-                                    <li><span className="dropdown-item">По дате редактирования</span></li>
+                                    <li onClick={() => reorderBy('title')}><span className={"dropdown-item" + (sortingBy === 'title' ? ' active' : '')}>По названию</span></li>
+                                    <li onClick={() => reorderBy('createdAt')}><span className={"dropdown-item" + (sortingBy === 'createdAt' ? ' active' : '') }>По дате создания</span></li>
+                                    <li onClick={() => reorderBy('updatedAt')}><span className={"dropdown-item" + (sortingBy === 'updatedAt' ? ' active' : '') }>По дате редактирования</span></li>
                                 </ul>
                             </li>
                         </ul>
@@ -41,7 +41,9 @@ export const Navbar = (): JSX.Element => {
                     >
                         <CardForm
                             onSubmit={(values: CardType) => {
-                                addRecord(values).then(() => toggleModal())
+                                addRecord(values)
+                                    .then(() => toggleModal())
+                                    .catch(err => alert(err))
                             }}
                         />
                     </ModalWindow>

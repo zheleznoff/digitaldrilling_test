@@ -1,32 +1,36 @@
 import { createContext, useEffect, useState } from 'react';
 import { CardType, ExistedCardType } from '../components/MainPage/CardList/Card/Card.types'
-
-const defaultValues = {
-    db: null,
-    data: [],
-    databaseName: 'Notes',
-    storeName: 'MyNotes',
-}
 type ProviderType = {
     db: IDBDatabase | null,
     data: ExistedCardType[] | [],
     databaseName: string,
-    storeName: string
+    storeName: string,
+    sortingBy: 'createdAt' | 'updatedAt' | 'title'
 }
 
-type IndexedDBContextType  = {
+const defaultValues: ProviderType = {
+    db: null,
+    data: [],
+    databaseName: 'Notes',
+    storeName: 'MyNotes',
+    sortingBy: 'createdAt'
+}
+
+type IndexedDBContextType = {
     providerData: ProviderType,
     addRecord: (record: CardType) => Promise<unknown>,
     deleteRecord: (key: number) => Promise<unknown>,
-    updateRecord: (key: number, updatedRecord: CardType) => Promise<unknown>
+    updateRecord: (key: number, updatedRecord: CardType) => Promise<unknown>,
+    reorderBy: (sortingBy: 'createdAt' | 'updatedAt' | 'title') => void
 }
 
 
 const IndexedDBContext = createContext<IndexedDBContextType>({
     providerData: defaultValues,
     addRecord: (record: CardType) => new Promise(() => null),
-    deleteRecord: (key: number) => new Promise(() => null),
-    updateRecord: (key: number) => new Promise(() => null)
+    deleteRecord: (key) => new Promise(() => null),
+    updateRecord: (key, updatedRecord) => new Promise(() => null),
+    reorderBy: (sortingBy) => { }
 });
 
 type Props = {
@@ -38,7 +42,7 @@ const IndexedDBProvider = ({ children }: Props) => {
 
     useEffect(() => {
         const openDB = () => {
-            return new Promise<{db: IDBDatabase,data: ExistedCardType[]}>((resolve, reject) => {
+            return new Promise<{ db: IDBDatabase, data: ExistedCardType[] }>((resolve, reject) => {
                 const openRequest = indexedDB.open(providerData.databaseName, 1);
 
                 openRequest.onupgradeneeded = function () {
@@ -93,7 +97,23 @@ const IndexedDBProvider = ({ children }: Props) => {
         // eslint-disable-next-line
     }, []);
 
+    const sortBy = (list: ExistedCardType[], sortingBy: 'createdAt' | 'updatedAt' | 'title'): ExistedCardType[] => {
+        const newList = [...list];
+        return newList.sort((a, b) => {
+            if (sortingBy === 'title') {
+                return a[sortingBy] < b[sortingBy] ? -1 : 1
+            }
+            else {
+                return b[sortingBy].valueOf() - a[sortingBy].valueOf()
+            }
+        })
+    }
+
     const addRecord = async (record: CardType) => {
+
+        if (!record.title || !record.text) {
+            throw 'Необходимо заполнить все поля!';
+        }
 
         return new Promise(async (resolve, reject) => {
             const transaction = providerData.db!.transaction(providerData.storeName, 'readwrite');
@@ -106,7 +126,10 @@ const IndexedDBProvider = ({ children }: Props) => {
                     updatedAt: new Date()
                 });
                 request.onsuccess = function () {
-                    setProviderData({ ...providerData, data: [...providerData.data, { ...record, id: Number(request.result)}] });
+                    setProviderData({ 
+                        ...providerData, 
+                        data: sortBy([...providerData.data, { ...record, id: Number(request.result) }], providerData.sortingBy)
+                    });
                     resolve('Запись успешно добавлена');
                 };
 
@@ -169,7 +192,10 @@ const IndexedDBProvider = ({ children }: Props) => {
                     const updateRequest = store.put(updatedData);
 
                     updateRequest.onsuccess = function () {
-                        setProviderData({ ...providerData, data: providerData.data?.map(item => item.id === key ? updatedData : item) });
+                        setProviderData({ 
+                            ...providerData, 
+                            data: sortBy(providerData.data?.map(item => item.id === key ? updatedData : item), providerData.sortingBy) 
+                        });
                         resolve('Record updated successfully');
                     };
 
@@ -187,8 +213,16 @@ const IndexedDBProvider = ({ children }: Props) => {
         });
     };
 
+    const reorderBy = (sortingBy: 'createdAt' | 'updatedAt' | 'title'): void => {
+        setProviderData({
+            ...providerData,
+            data: sortBy(providerData.data, sortingBy),
+            sortingBy: sortingBy
+        });
+    }
+
     return (
-        <IndexedDBContext.Provider value={{providerData, addRecord, deleteRecord, updateRecord}}>
+        <IndexedDBContext.Provider value={{ providerData, addRecord, deleteRecord, updateRecord, reorderBy }}>
             {children}
         </IndexedDBContext.Provider>
     );

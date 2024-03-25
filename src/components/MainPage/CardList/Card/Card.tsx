@@ -33,7 +33,7 @@ const Card = ({ card }: Props): JSX.Element => {
                     {card.text}
                 </p>
                 <div
-                    className='d-flex justify-content-between align-items-center'
+                    className='d-flex justify-content-between align-items-center card__footer gap-3'
                 >
                     <div className='d-flex gap-2'>
                         <ModalWindow
@@ -53,14 +53,13 @@ const Card = ({ card }: Props): JSX.Element => {
                         <button
                             className='btn btn-danger'
                             onClick={() => {
-                                console.log(card);
                                 deleteRecord(card.id).then(() => toggleModal())
                             }}
                         >
                             Удалить
                         </button>
                     </div>
-                    <div className='d-flex gap-2'>
+                    <div className='d-flex gap-2 flex-row card__dates'>
                         <span className='text-muted'>
                             {`Создано: ${card.createdAt.toLocaleString()}`}
                         </span>

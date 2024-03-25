@@ -4,6 +4,8 @@ import { MainPage } from './components/MainPage/MainPage';
 import {IndexedDBProvider} from './providers/IndexedDBProvider';
 
 function App() {
+
+  
   return (
     <>
       <IndexedDBProvider>

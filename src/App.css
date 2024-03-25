@@ -35,3 +35,29 @@
     color: black;
     cursor: pointer;
 }
+
+
+.card_list {
+    width: 50%;
+}
+
+.card__footer {
+    display: flex;
+    flex-direction: row;
+}
+
+@media only screen and (max-width: 900px) {
+    .card_list {
+        width: 100%;
+        padding: 0 20px;
+    }
+}
+
+@media only screen and (max-width: 550px) {
+    .card__footer {
+        flex-direction: column;
+    }
+    .card__dates {
+        flex-direction: column;
+    }
+}
