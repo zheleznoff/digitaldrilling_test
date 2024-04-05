@@ -1,3 +1,55 @@
+# Test task for the vacancy Frontend developer (eng)
+
+You need to write a one-page website with notes stored in the browser. Each note contains the following information:
+- Title (text);
+- Contents (text);
+- Creation date (date-time);
+- Date of last edit (date-time).
+
+All notes should be displayed as a list of cards in the center of the page.
+The card must contain all the note data, as well as interactive elements to implement the feature:
+
+- Editing a note (only the title and content are edited);
+- Deleting a note.
+
+Use browser storage to store data.
+For user convenience, it is necessary to implement sorting of cards by:
+
+- Name;
+- Date created;
+- Last modified date.
+
+Interactive elements outside of cards should be located in the page header.
+The source code must be published in a repository on a convenient git platform (Github is recommended).
+Changes in the repository should be divided into commits into semantic blocks.
+
+
+# Тестовое задание на вакансию Frontend-разработчик (rus)
+
+Необходимо написать одностраничный сайт с заметками, хранящимися в браузере. Каждая заметка содержит следующие данные:
+
+- Название (текст)
+- Содержание (текст)
+- Дата создания (дата-время)
+- Дата последнего редактирования (дата-время)
+
+Все заметки должны выводиться в виде списка карточек в центре страницы.
+На карточке должны находится все данные заметки, а также интерактивные элементы для реализации возможности:
+
+- Редактирования заметки (редактируется только название и содержание);
+- Удаления заметки.
+
+Для хранения данных использовать хранилище браузера.
+Для удобства пользователя необходимо реализовать сортировку карточек по:
+
+- Названию;
+- Дате создание;
+- Дате последнего изменения.
+
+Интерактивные элементы вне карточек должны находится в шапке страницы.
+Исходный код необходимо опубликовать в репозитории на удобной git-платформе (рекомендуется Github).
+В изменения в репозитории должны быть разделены на коммиты по смысловым блокам.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
